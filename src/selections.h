@@ -47,30 +47,20 @@ void mutau_analyzer::selections(float weight, int shift, string uncObject)
   {
    if(abs(mcPID->at(i)) == pdgid_tocheck)
    {
-      //std::cout<<"coming inside gen and pdgid_tocheck "<<pdgid_tocheck<<std::endl;
-   
-      //std::cout<<"coming inside gen higgs"<<pdgid_tocheck<<std::endl;
-	    //if(abs(mcDaughterPID->at(i)) == 13){
-      // if (abs(mcDaughterPID->at(i)) == 13)
-      //cout<< i << " " << mcPID->at(i) << " " << " " << mcDaughterPID->at(i) <<endl;
-      //cout<< i <<  " " << mcDaughterPID->at(i) <<endl;
-      genhiggscand.push_back(i);
+       genhiggscand.push_back(i);
       
-    }
+   }
   }
   //std::cout<<"coming here 1 "<<std::endl;
   for(int i=0; i<nMC; i++){
-    //if(abs(mcMotherPID->at(i))==pdgid_tocheck && mcPID->at(i)==15  )
-    //if(abs(mcPID->at(i)) == 13 )
-    if(abs(mcPID->at(i)) == 15  && abs(mcMotherPID->at(i)) == pdgid_tocheck && abs(mcDaughterPID->at(i)) == 13)
+    if(mcPID->at(i) == 15  && abs(mcMotherPID->at(i)) == pdgid_tocheck)
       {
 	      genmucand.push_back(i);
 	      gentau1_index = i;
 	      gentau1.SetPtEtaPhiE(mcPt->at(i) , mcEta->at(i) , mcPhi->at(i)  , mcE->at(i));
       }
-      //std::cout<<"coming here 2 "<<std::endl;
-      //if(abs(mcPID->at(i)) == 15 )
-      if(abs(mcPID->at(i)) == 15 &&  abs(mcMotherPID->at(i)) == pdgid_tocheck && abs(mcDaughterPID->at(i)) == 15 )
+    //if(abs(mcPID->at(i+1)) == 15 &&  abs(mcMotherPID->at(i+1)) == pdgid_tocheck && abs(mcDaughterPID->at(i+1)) == 15 )
+    if(mcPID->at(i) == -15 &&  abs(mcMotherPID->at(i)) == pdgid_tocheck)
       {
 	      gentaucand.push_back(i);
 	      gentau2_index = i;
@@ -94,8 +84,7 @@ void mutau_analyzer::selections(float weight, int shift, string uncObject)
       //if( gentau1.Pt()>20 && gentau2.Pt()>20  && abs(gentau1.Eta())<2.3 && abs(gentau2.Eta())<2.3 )
       if(abs(gentau1.Eta())<2.3 && abs(gentau2.Eta())<2.3 )
 	    {
-        
-	      //std::cout<<"gen index "<<gentau1_index<<"2nd index : "<<gentau2_index<<std::endl;
+              //std::cout<<"gen index "<<gentau1_index<<"2nd index : "<<gentau2_index<<std::endl;
 	      plotFill("genmuPt_raw_0", genTauPt, 970, 30, 1000, event_weight);
 	      plotFill("gentauPt_raw_0", gensubleadingtauPt, 970, 30, 1000, event_weight);
 	      plotFill("genHiggsPt_raw_0", gentau_higgsPt, 970, 30, 1000, event_weight);
@@ -112,7 +101,7 @@ void mutau_analyzer::selections(float weight, int shift, string uncObject)
 		        if (mu_index >= 0 && tau_index >= 0)
 		        {
 		          //std::cout<<"mu index "<<mu_index<<"2nd index : "<<tau_index<<std::endl;
-              //MuIndex = mu_index;
+                          //MuIndex = mu_index;
 		          //TauIndex = tau_index;
 		          my_muP4.SetPtEtaPhiE(muPt->at(mu_index), muEta->at(mu_index),muPhi->at(mu_index), muE->at(mu_index));
 		          my_tauP4.SetPtEtaPhiE(tau_Pt->at(tau_index), tau_Eta->at(tau_index), tau_Phi->at(tau_index), tau_Energy->at(tau_index));
@@ -123,9 +112,14 @@ void mutau_analyzer::selections(float weight, int shift, string uncObject)
 		        	  genmatchedmu_idx = gentau1_index;
 		        	  genmatchedtau_idx = gentau2_index;
 		        	}
+			        if(my_muP4.DeltaR(gentau2)<0.1 && my_tauP4.DeltaR(gentau1)<0.1)
+		        	{
+		        	  genmatchedmu_idx = gentau2_index;
+		        	  genmatchedtau_idx = gentau1_index;
+		        	}
 		          
 		          if(genmatchedmu_idx >= 0 && genmatchedtau_idx >= 0)
-              {
+			    {
 			          std::cout<<"coming here 1"<<std::endl;
 			          genmatch_mup4.SetPtEtaPhiE(mcPt->at(genmatchedmu_idx) , mcEta->at(genmatchedmu_idx) , mcPhi->at(genmatchedmu_idx)  , mcE->at(genmatchedmu_idx));
 			          genmatch_taup4.SetPtEtaPhiE(mcPt->at(genmatchedtau_idx) , mcEta->at(genmatchedtau_idx) , mcPhi->at(genmatchedtau_idx)  , mcE->at(genmatchedtau_idx));
@@ -133,7 +127,7 @@ void mutau_analyzer::selections(float weight, int shift, string uncObject)
 			          gen_subleadingtauPt = genmatch_taup4.Pt();
 			          gen_taudeltaR = genmatch_mup4.DeltaR(genmatch_taup4);
 			          gen_tauhiggsPt = (genmatch_mup4 + genmatch_taup4).Pt();
-                //my_metP4 = SetPtEtaPhiE(pfMET, 0, pfMETPhi, pfMET);
+				  //my_metP4 = SetPtEtaPhiE(pfMET, 0, pfMETPhi, pfMET);
 			          cout<<__LINE__<<endl; // 
 
 			          plotFill("genmuPt_num_1", gen_TauPt, 970, 30, 1000, event_weight);
@@ -213,6 +207,12 @@ void mutau_analyzer::selections(float weight, int shift, string uncObject)
 	            cout<<__LINE__<<endl; //
 	            genmatchedmu_idx = gentau1_index;
 	            genmatchedtau_idx = gentau2_index;
+	          }
+          if(myboost_muP4.DeltaR(gentau2)<0.1 && myboost_tauP4.DeltaR(gentau1)<0.1)
+	          {
+	            cout<<__LINE__<<endl; //
+	            genmatchedmu_idx = gentau2_index;
+	            genmatchedtau_idx = gentau1_index;
 	          }
 	        if (genmatchedmu_idx >= 0 && genmatchedtau_idx >=0)
 	        {
